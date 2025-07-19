@@ -7,4 +7,10 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="polling_primary_blue">#4285F4</color>
+    <color name="polling_secondary_green">#34A853</color>
+    <color name="polling_background_light">#F0F4F8</color>
+    <color name="polling_text_dark">#263238</color>
+    <color name="polling_text_medium">#607D8B</color>
 </resources>
