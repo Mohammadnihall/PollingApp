@@ -1,5 +1,7 @@
 package project.app.pollingapp
 
+import android.app.Activity
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -138,5 +140,42 @@ fun LoginScreen(navController: NavController) {
 fun PreviewLoginScreen() {
     PollingAppTheme {
         LoginScreen(navController = rememberNavController())
+    }
+}
+
+private fun signInWithuseremail(useremail: String, userpassword: String, context: Activity, onLoginSuccess: (type:Int) -> Unit) {
+    val db = FirebaseDatabase.getInstance()
+    val sanitizedUid = useremail.replace(".", ",")
+    val ref = db.getReference("Users").child(sanitizedUid)
+
+    ref.get().addOnCompleteListener { task ->
+        if (task.isSuccessful) {
+            val userData = task.result?.getValue(UserData::class.java)
+            if (userData != null) {
+                if (userData.password == userpassword) {
+                    //Save User Details
+                    saveUserDetails(userData, context)
+//                    UserDetails.saveUserLoginStatus(context,true)
+//                    UserDetails.saveEmail(context,useremail)
+
+                    onLoginSuccess.invoke(1)
+//                    context.startActivity(Intent(context, DashboardActivity::class.java))
+//                    context.finish()
+
+                    Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Invalid Password", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(context, "No user data found", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            // Data retrieval failed
+            Toast.makeText(
+                context,
+                "Failed to retrieve user data: ${task.exception?.message}",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
     }
 }
