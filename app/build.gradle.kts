@@ -1,14 +1,16 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("com.google.gms.google-services")
+    id("kotlin-kapt")
 }
 
 android {
-    namespace = "project.app.pollingapp"
+    namespace = "pollingapp.by.mohammadnihalls3451385"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "project.app.pollingapp"
+        applicationId = "pollingapp.by.mohammadnihalls3451385"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -66,6 +68,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.firebase.database.ktx)
 
     implementation("androidx.navigation:navigation-compose:2.7.0") // Use the latest stable version
 

@@ -1,4 +1,4 @@
-package project.app.pollingapp
+package pollingapp.by.mohammadnihalls3451385
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -8,31 +8,23 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import project.app.pollingapp.ui.theme.PollingAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegistrationScreen(navController: NavController) {
-    var fullName by remember { mutableStateOf("") }
+fun LoginScreenOld(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var area by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier
@@ -50,21 +42,10 @@ fun RegistrationScreen(navController: NavController) {
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Create Account",
+                text = "Welcome Back!",
                 style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 24.dp)
-            )
-
-            OutlinedTextField(
-                value = fullName,
-                onValueChange = { fullName = it },
-                label = { Text("Full Name") },
-                leadingIcon = { Icon(Icons.Default.Person, contentDescription = "Full Name Icon") },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
             )
 
             OutlinedTextField(
@@ -92,25 +73,15 @@ fun RegistrationScreen(navController: NavController) {
                     .padding(vertical = 8.dp)
             )
 
-            OutlinedTextField(
-                value = area,
-                onValueChange = { area = it },
-                label = { Text("Area") },
-                leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = "Area Icon") },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            )
-
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
                 onClick = {
-                    // Handle registration logic here
-                    // For now, navigate back to login after "registration"
-                    navController.navigate("login") {
-                        popUpTo("register") { inclusive = true } // Clear back stack up to register
+                    // Handle login logic here
+                    // For now, navigate to a dummy home screen or back to splash for demonstration
+                    // In a real app, you'd verify credentials and then navigate.
+                    navController.navigate("splash") {
+                        popUpTo("login") { inclusive = true } // Clear back stack up to login
                     }
                 },
                 modifier = Modifier
@@ -119,10 +90,20 @@ fun RegistrationScreen(navController: NavController) {
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Text("Register", fontSize = 18.sp)
+                Text("Login", fontSize = 18.sp)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            TextButton(onClick = { /* Handle forgot password */ }) {
+                Text(
+                    text = "Forgot Password?",
+                    color = MaterialTheme.colorScheme.secondary,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -130,27 +111,64 @@ fun RegistrationScreen(navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Already have an account?",
+                    text = "Don't have an account?",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "Login",
+                    text = "Register",
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.clickable { navController.navigate("login") }
+                    modifier = Modifier.clickable { navController.navigate("register") }
                 )
             }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewRegistrationScreen() {
-    PollingAppTheme {
-        RegistrationScreen(navController = rememberNavController())
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun PreviewLoginScreen() {
+//    PollingAppTheme {
+//        LoginScreen(navController = rememberNavController())
+//    }
+//}
+
+//private fun signInWithuseremail(useremail: String, userpassword: String, context: Activity, onLoginSuccess: (type:Int) -> Unit) {
+//    val db = FirebaseDatabase.getInstance()
+//    val sanitizedUid = useremail.replace(".", ",")
+//    val ref = db.getReference("Users").child(sanitizedUid)
+//
+//    ref.get().addOnCompleteListener { task ->
+//        if (task.isSuccessful) {
+//            val userData = task.result?.getValue(UserData::class.java)
+//            if (userData != null) {
+//                if (userData.password == userpassword) {
+//                    //Save User Details
+//                    saveUserDetails(userData, context)
+////                    UserDetails.saveUserLoginStatus(context,true)
+////                    UserDetails.saveEmail(context,useremail)
+//
+//                    onLoginSuccess.invoke(1)
+////                    context.startActivity(Intent(context, DashboardActivity::class.java))
+////                    context.finish()
+//
+//                    Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
+//                } else {
+//                    Toast.makeText(context, "Invalid Password", Toast.LENGTH_SHORT).show()
+//                }
+//            } else {
+//                Toast.makeText(context, "No user data found", Toast.LENGTH_SHORT).show()
+//            }
+//        } else {
+//            // Data retrieval failed
+//            Toast.makeText(
+//                context,
+//                "Failed to retrieve user data: ${task.exception?.message}",
+//                Toast.LENGTH_SHORT
+//            ).show()
+//        }
+//    }
+//}

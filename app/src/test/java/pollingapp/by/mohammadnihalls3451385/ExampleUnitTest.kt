@@ -1,4 +1,4 @@
-package project.app.pollingapp
+package pollingapp.by.mohammadnihalls3451385
 
 import org.junit.Test
 
