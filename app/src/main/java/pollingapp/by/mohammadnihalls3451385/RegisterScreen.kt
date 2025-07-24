@@ -1,5 +1,6 @@
 package pollingapp.by.mohammadnihalls3451385
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,20 +16,32 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import pollingapp.by.mohammadnihalls3451385.mypolls.PollViewModel
+import java.util.UUID
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegistrationScreenOld(navController: NavController) {
+fun RegistrationScreen(navController: NavController, pollViewModel: PollViewModel) {
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var area by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val database = FirebaseDatabase.getInstance()
+    val usersRef = database.getReference("users")
 
     Box(
         modifier = Modifier
@@ -41,7 +54,7 @@ fun RegistrationScreenOld(navController: NavController) {
                 .fillMaxWidth(0.9f)
                 .clip(RoundedCornerShape(20.dp))
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(24.dp), // Add elevation for a card-like effect
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -103,10 +116,41 @@ fun RegistrationScreenOld(navController: NavController) {
 
             Button(
                 onClick = {
-                    // Handle registration logic here
-                    // For now, navigate back to login after "registration"
-                    navController.navigate("login") {
-                        popUpTo("register") { inclusive = true } // Clear back stack up to register
+                    if (fullName.isNotBlank() && email.isNotBlank() && password.isNotBlank() && area.isNotBlank()) {
+                        // Check if email already exists
+                        usersRef.orderByChild("email").equalTo(email)
+                            .addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onDataChange(snapshot: DataSnapshot) {
+                                    if (snapshot.exists()) {
+                                        Toast.makeText(context, "Email already registered.", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        val newUserId = usersRef.push().key ?: UUID.randomUUID().toString()
+                                        val newUser = User(
+                                            uid = newUserId,
+                                            fullName = fullName,
+                                            email = email,
+                                            password = password,
+                                            area = area
+                                        )
+                                        usersRef.child(newUserId).setValue(newUser)
+                                            .addOnSuccessListener {
+                                                Toast.makeText(context, "Registration Successful!", Toast.LENGTH_SHORT).show()
+                                                navController.navigate("login") {
+                                                    popUpTo("register") { inclusive = true }
+                                                }
+                                            }
+                                            .addOnFailureListener { e ->
+                                                Toast.makeText(context, "Failed to save user data: ${e.message}", Toast.LENGTH_LONG).show()
+                                            }
+                                    }
+                                }
+
+                                override fun onCancelled(error: DatabaseError) {
+                                    Toast.makeText(context, "Registration Failed: ${error.message}", Toast.LENGTH_LONG).show()
+                                }
+                            })
+                    } else {
+                        Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier
@@ -143,10 +187,10 @@ fun RegistrationScreenOld(navController: NavController) {
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewRegistrationScreen() {
-//    PollingAppTheme {
-//        RegistrationScreen(navController = rememberNavController())
-//    }
-//}
+@Preview(showBackground = true)
+@Composable
+fun PreviewRegistrationScreen() {
+    PollingAppTheme {
+        RegistrationScreen(navController = rememberNavController(), pollViewModel = viewModel())
+    }
+}

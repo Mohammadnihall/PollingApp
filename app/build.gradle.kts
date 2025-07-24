@@ -72,4 +72,6 @@ dependencies {
 
     implementation("androidx.navigation:navigation-compose:2.7.0") // Use the latest stable version
 
+    implementation("androidx.biometric:biometric:1.4.0-alpha02")
+
 }

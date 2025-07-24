@@ -1,30 +1,60 @@
 package pollingapp.by.mohammadnihalls3451385
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import pollingapp.by.mohammadnihalls3451385.mypolls.AppData
+import pollingapp.by.mohammadnihalls3451385.mypolls.PollViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
-fun LoginScreenOld(navController: NavController) {
+fun LoginScreen(navController: NavController,pollViewModel: PollViewModel) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val database = FirebaseDatabase.getInstance()
+    val usersRef = database.getReference("users")
 
     Box(
         modifier = Modifier
@@ -37,7 +67,7 @@ fun LoginScreenOld(navController: NavController) {
                 .fillMaxWidth(0.9f)
                 .clip(RoundedCornerShape(20.dp))
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(24.dp), // Add elevation for a card-like effect
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -77,11 +107,52 @@ fun LoginScreenOld(navController: NavController) {
 
             Button(
                 onClick = {
-                    // Handle login logic here
-                    // For now, navigate to a dummy home screen or back to splash for demonstration
-                    // In a real app, you'd verify credentials and then navigate.
-                    navController.navigate("splash") {
-                        popUpTo("login") { inclusive = true } // Clear back stack up to login
+                    if (email.isNotBlank() && password.isNotBlank()) {
+                        usersRef.orderByChild("email").equalTo(email)
+                            .addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onDataChange(snapshot: DataSnapshot) {
+                                    var userFound = false
+                                    for (userSnapshot in snapshot.children) {
+                                        val user = userSnapshot.getValue(User::class.java)
+                                        if (user != null && user.password == password) {
+                                            savePollingUserDetails(user, context)
+                                            pollViewModel.onUserLoggedIn()
+
+                                            Toast.makeText(
+                                                context,
+                                                "Login Successful!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            navController.navigate("home") {
+                                                popUpTo("login") { inclusive = true }
+                                            }
+                                            userFound = true
+                                            break
+                                        }
+                                    }
+                                    if (!userFound) {
+                                        Toast.makeText(
+                                            context,
+                                            "Invalid email or password.",
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
+
+                                override fun onCancelled(error: DatabaseError) {
+                                    Toast.makeText(
+                                        context,
+                                        "Login Failed: ${error.message}",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                }
+                            })
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Please enter email and password",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 },
                 modifier = Modifier
@@ -94,16 +165,6 @@ fun LoginScreenOld(navController: NavController) {
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            TextButton(onClick = { /* Handle forgot password */ }) {
-                Text(
-                    text = "Forgot Password?",
-                    color = MaterialTheme.colorScheme.secondary,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -128,47 +189,9 @@ fun LoginScreenOld(navController: NavController) {
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun PreviewLoginScreen() {
-//    PollingAppTheme {
-//        LoginScreen(navController = rememberNavController())
-//    }
-//}
+fun savePollingUserDetails(user: User, context: Context) {
+    AppData.setLoggedIn(context = context, true)
+    AppData.setUserName(context, user.fullName)
+    AppData.setUserEmail(context, user.email)
+}
 
-//private fun signInWithuseremail(useremail: String, userpassword: String, context: Activity, onLoginSuccess: (type:Int) -> Unit) {
-//    val db = FirebaseDatabase.getInstance()
-//    val sanitizedUid = useremail.replace(".", ",")
-//    val ref = db.getReference("Users").child(sanitizedUid)
-//
-//    ref.get().addOnCompleteListener { task ->
-//        if (task.isSuccessful) {
-//            val userData = task.result?.getValue(UserData::class.java)
-//            if (userData != null) {
-//                if (userData.password == userpassword) {
-//                    //Save User Details
-//                    saveUserDetails(userData, context)
-////                    UserDetails.saveUserLoginStatus(context,true)
-////                    UserDetails.saveEmail(context,useremail)
-//
-//                    onLoginSuccess.invoke(1)
-////                    context.startActivity(Intent(context, DashboardActivity::class.java))
-////                    context.finish()
-//
-//                    Toast.makeText(context, "Login successful", Toast.LENGTH_SHORT).show()
-//                } else {
-//                    Toast.makeText(context, "Invalid Password", Toast.LENGTH_SHORT).show()
-//                }
-//            } else {
-//                Toast.makeText(context, "No user data found", Toast.LENGTH_SHORT).show()
-//            }
-//        } else {
-//            // Data retrieval failed
-//            Toast.makeText(
-//                context,
-//                "Failed to retrieve user data: ${task.exception?.message}",
-//                Toast.LENGTH_SHORT
-//            ).show()
-//        }
-//    }
-//}
